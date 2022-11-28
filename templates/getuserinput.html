@@ -4,10 +4,10 @@
   <h1>{% block title %}To get started, please enter the following information: {% endblock %}</h1>
     <form method="post">
         <label for="name"><h3>User name: </h3></label><br>
-        <input type="text" name="name" placeholder="Your name..">
+        <input type="text" name="name" placeholder="Your name">
         <br>
         <label for="game_list"><h3>Game List: </h3></label><br>
-        <input type="text" name="game_list" placeholder="A list of games you have purchased on Steam. Separated by comma.">
+        <input required type="text" name="game_list" placeholder="A list of games you have purchased on Steam. Separated by comma.">
         <br>
         <input type="submit" value="Submit form">
     </form>
