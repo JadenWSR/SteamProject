@@ -2,5 +2,4 @@
 flask
 gunicorn
 numpy
-random
 pandas
