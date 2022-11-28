@@ -1,0 +1,11 @@
+###### Requirements without Version Specifiers ######
+flask
+gunicorn
+numpy
+sqlite3
+pickle
+random
+pandas
+io
+base64
+os

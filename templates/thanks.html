@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h2>Thank you for submitting the form! To view our results summary, click here:</h2>
+<form action="{{ url_for('Resultssummary') }}">
+ <button class = "button1" type="submit">Summary</button>
+</form>
+ <br /> 
+<h2>Thank you for using our Webapp! To startover, click here:</h2>
+   <form action="{{ url_for('getuserinput') }}">
+     <button class = "button" type="submit">Start Again!</button>
+    </form>
+{% endblock %}

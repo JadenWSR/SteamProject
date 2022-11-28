@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<center>
+<p><h2><strong>User Info and Recommendation Summary</strong></h2></p>
+
+
+<table style="width:100%">
+    <tr>
+      <th>User Id</th>
+      <th>User Name</th>
+      <th>Game List</th>
+    </tr>
+    {% for index, row in messages.iterrows() %}
+    <tr>
+      <td>{{ row[0]}}</td>
+      <td>{{ row[1]}}</td>
+      <td>{{ row[2]}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</center>
+
+{% if error %}
+<br>Sorry, we don't have any users right now. 
+{% endif %}
+
+
+{% endblock %}
+  
