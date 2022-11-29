@@ -2,12 +2,18 @@
 
 {% block body %}
   <h1>{% block title %}To get started, please enter the following information: {% endblock %}</h1>
+  <br>
     <form method="post">
         <label for="name"><h3>User name: </h3></label><br>
         <input type="text" name="name" placeholder="Your name">
         <br>
-        <label for="game_list"><h3>Game List: </h3></label><br>
-        <input required type="text" name="game_list" placeholder="A list of games you have purchased on Steam. Separated by comma.">
+        <br>
+        <label for="game_entered"><h3>Please enter a game you have played on Steam to start the recommendation: </h3></label><br>
+        <input required type="text" name="game_entered" placeholder="Must enter the exact game name from Steam.">
+        <br>
+        <br>
+        <label for="num"><h3>Number of games shown in the resulting recommendation(between 1 and 5): </h3></label><br>
+        <input type="number" name="num" min="1" max="5" value="5">
         <br>
         <input type="submit" value="Submit form">
     </form>

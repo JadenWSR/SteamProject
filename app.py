@@ -11,6 +11,7 @@ import io
 import base64
 import os
 
+from recommendation import *
 
 # DEVELOPMENT_ENV  = True
 
@@ -42,7 +43,8 @@ def get_user_db():
         sql_create_user_table = """ CREATE TABLE IF NOT EXISTS user (
                                     id integer,
                                     name text,
-                                    game_list text
+                                    game_entered text,
+                                    recommendation text
                                 ); """
         cursor.execute(sql_create_user_table)
     # Return the connection
@@ -58,21 +60,22 @@ def insert_user_info(request):
         name = "Anonymous"
     name = name.replace("'", "''")
 
-    game_list = request.form["game_list"]
-    game_list = game_list.replace("'", "''")
+    game_entered = request.form["game_entered"]
+    game_entered = game_entered.replace("'", "''")
+
+    recommendation = get_recommendation(game_user_likes=game_entered, num=request.form.get('num', type=int))
 
     # get nrow and assign unique id
     n_row = cursor.execute('select * from user;')
     nrow = len(n_row.fetchall()) + 1
     
     # add a new row to user database
-    cursor.execute("INSERT INTO user (id, name, game_list) VALUES ({nrow}, '{name}', '{game_list}')".format(
-        nrow = nrow, name = name, game_list = game_list))
+    cursor.execute("INSERT INTO user (id, name, game_entered, recommendation) VALUES ({nrow}, '{name}', '{game_entered}', '{recommendation}')".format(
+        nrow = nrow, name = name, game_entered = game_entered, recommendation = recommendation))
     # Save the change
     g.user_db.commit()
     # close the connection
     g.user_db.close()
-
 
 def get_user_info():
     # open the connection
@@ -82,6 +85,21 @@ def get_user_info():
     # close the connection
     g.user_db.close()
     return messages
+
+def generate_preview_info():
+    # open the connection
+    g.user_db = get_user_db()
+    # get id number of the user
+    id = int(request.form['user_id'])
+    
+    # Get a collection of all user input from the user_db
+    messages = pd.read_sql_query("SELECT * FROM user where id = '{id}'".format(id = id), g.user_db)
+    # close the connection
+    g.user_db.close()
+
+    str_r = messages.get('recommendation')[0]
+    recommendation = list(str_r.split('/'))
+    return messages, recommendation
 
 @app.route('/')
 def index():
@@ -100,13 +118,20 @@ def getuserinput():
             return render_template('error.html', app_data=app_data)
             
 
-@app.route('/Resultssummary')
+@app.route('/Resultssummary', methods=['POST', 'GET'])
 def Resultssummary():
-    try:
-        messages = get_user_info()
-        return render_template('Resultssummary.html', messages = messages, app_data=app_data)
-    except:
-        return render_template('Resultssummary.html', app_data=app_data)
+    if request.method == 'GET':
+        try:
+            messages = get_user_info()
+            return render_template('Resultssummary.html', messages = messages, app_data=app_data)
+        except:
+            return render_template('Resultssummary.html', app_data=app_data)
+    else: # if request.method == 'POST'
+        try:
+            messages, games = generate_preview_info()
+            return render_template('preview.html', app_data=app_data, messages = messages, games = games)
+        except:
+            return render_template('preview.html', app_data=app_data)
 
 @app.route('/contact')
 def contact():

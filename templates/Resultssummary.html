@@ -9,17 +9,25 @@
     <tr>
       <th>User Id</th>
       <th>User Name</th>
-      <th>Game List</th>
+      <th>Game Entered</th>
+      <th>Recommendation</th>
     </tr>
     {% for index, row in messages.iterrows() %}
     <tr>
-      <td>{{ row[0]}}</td>
+      <form method="post"><td>
+        <button class = "button2" name = 'user_id' type="submit" formtarget="_blank" value="{{row[0]}}">{{ row[0]}}</button></td>
+      </form>
       <td>{{ row[1]}}</td>
       <td>{{ row[2]}}</td>
+      <td>{{ row[3]}}</td>
     </tr>
     {% endfor %}
   </table>
 </center>
+
+<footer>
+  <p>Click a user id to preview the corresponding recommendations.</p>
+</footer>
 
 {% if error %}
 <br>Sorry, we don't have any users right now. 
