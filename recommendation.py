@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from heapq import nlargest
 
-df = pd.read_csv(r"./Data/steam_games.csv", header=0, sep=";")
+df = pd.read_csv(r"./Data/steam_games.csv", header=0, sep=";", low_memory=False)
 # print(df.head)
 
 features = ['Developer', 'Genre', 'Categories', 'Tags']
@@ -31,17 +31,30 @@ def get_index_from_title(title):
 def get_title_from_index(index):
         return df[df.index == index]["Name"].values[0]
 
-def get_recommendation(game_user_likes = "Crysis 3"):
+def get_recommendation(game_user_likes = "Crysis 3", num = 5):
     game_index = get_index_from_title(game_user_likes)
 
     cosine_sim = cosine_similarity(count_matrix[game_index],count_matrix)[0]
 
     similar_games = list(enumerate(cosine_sim))
     # sorted_similar_movies = sorted(similar_movies, key=lambda x:x[1], reverse=True)
-    sorted_similar_movies = nlargest(5, similar_games, key=lambda x:x[1])[1::]
+    sorted_similar_games = nlargest(num + 1, similar_games, key=lambda x:x[1])[1::]
+
+    recom_list = []
+    for game in sorted_similar_games:
+        recom_list.append(get_title_from_index(game[0]))
     
-    for movie in sorted_similar_movies:
-        print(get_title_from_index(movie[0]))
+    str = " / ".join(recom_list)
+    return str
+
+def search(name):
+    # names = df[df.Name == name]["Name"]
+    filter = df.Name.str.contains(name, case=False)
+    names = df[filter]["Name"]
+    if not names.empty:
+        return names.values
+    else:
+        return ['None']
 
 if __name__ == '__main__':
-    get_recommendation("Crysis 3")
+    print(get_recommendation("Asdivine Kamura", num = 5))

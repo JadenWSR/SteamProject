@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+{% for index, row in messages.iterrows() %}
+    <h1> Hello <strong>{{ row[1]}}</strong>!</h1>
+    <br>
+    <h2>The game you entered is: <strong>{{ row[2]}}</strong></h2>
+    <br>
+    <h2>Games we recommend for you are:</h2>
+    <h2><strong>{{ row[3]}}</strong></h2>
+  </tr>
+  {% endfor %}
+<br>
+
+<h2>Please select one game to preview:</h2>
+<select name="games" method="GET">
+  {% for game in games %}
+      <option value="{{game}}" SELECTED>{{game}}</option>"
+  {% endfor %}
+</select>
+
+{% if error%}
+<h1>Error!</h1>
+
+{% endif %}
+
+{% endblock %}

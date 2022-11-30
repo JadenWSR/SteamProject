@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from flask import Flask, g, render_template, request, redirect, url_for
+from flask import Flask, g, render_template, request, redirect, url_for, make_response
 import numpy as np
 import sqlite3
 import pickle
@@ -11,9 +11,9 @@ import io
 import base64
 import os
 
+from recommendation import *
 
-# DEVELOPMENT_ENV  = True
-
+DEVELOPMENT_ENV  = True
 
 app = Flask(__name__)
 
@@ -26,9 +26,6 @@ app_data = {
 
 UPLOAD_FOLDER = os.path.join('../static/uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# Load the model
-
-# model = 
 
 def get_user_db():
     # Check whether there is a database called user_db in the g attribute of the app
@@ -42,7 +39,8 @@ def get_user_db():
         sql_create_user_table = """ CREATE TABLE IF NOT EXISTS user (
                                     id integer,
                                     name text,
-                                    game_list text
+                                    game_entered text,
+                                    recommendation text
                                 ); """
         cursor.execute(sql_create_user_table)
     # Return the connection
@@ -55,24 +53,25 @@ def insert_user_info(request):
     # Extract user_name and game list from request
     name = request.form["name"]
     if name == "":
-        name = "Anonymous"
+        name = "Anonymous User"
     name = name.replace("'", "''")
 
-    game_list = request.form["game_list"]
-    game_list = game_list.replace("'", "''")
+    game_entered = request.form["game_entered"]
+    game_entered = game_entered.replace("'", "''")
+
+    recommendation = get_recommendation(game_user_likes=game_entered, num=request.form.get('num', type=int))
 
     # get nrow and assign unique id
     n_row = cursor.execute('select * from user;')
     nrow = len(n_row.fetchall()) + 1
-    
+
     # add a new row to user database
-    cursor.execute("INSERT INTO user (id, name, game_list) VALUES ({nrow}, '{name}', '{game_list}')".format(
-        nrow = nrow, name = name, game_list = game_list))
+    cursor.execute("INSERT INTO user (id, name, game_entered, recommendation) VALUES (?, ?, ?, ?)",
+    (nrow, name, game_entered, recommendation))
     # Save the change
     g.user_db.commit()
     # close the connection
     g.user_db.close()
-
 
 def get_user_info():
     # open the connection
@@ -83,6 +82,21 @@ def get_user_info():
     g.user_db.close()
     return messages
 
+def generate_preview_info():
+    # open the connection
+    g.user_db = get_user_db()
+    # get id number of the user
+    id = int(request.form['user_id'])
+    
+    # Get a collection of all user input from the user_db
+    messages = pd.read_sql_query("SELECT * FROM user where id = '{id}'".format(id = id), g.user_db)
+    # close the connection
+    g.user_db.close()
+
+    str_r = messages.get('recommendation')[0]
+    recommendation = list(str_r.split('/'))
+    return messages, recommendation
+
 @app.route('/')
 def index():
     return render_template('index.html', app_data=app_data)
@@ -91,22 +105,90 @@ def index():
 @app.route('/getuserinput', methods=['POST', 'GET'])
 def getuserinput():
     if request.method == 'GET':
-        return render_template('getuserinput.html', app_data=app_data)
+        html = render_template('getuserinput.html', app_data=app_data)
+        response = make_response(html)
+        return response
+        # return render_template('getuserinput.html', app_data=app_data)
     else: # if request.method == 'POST'
         try:
             insert_user_info(request)
             return render_template('thanks.html', app_data=app_data)
         except:
             return render_template('error.html', app_data=app_data)
-            
 
-@app.route('/Resultssummary')
+@app.route('/searchresults', methods=['GET'])           
+def handle_search():
+    author = request.args.get('author')
+    if (author is None) or (author.strip() == ''):
+        response = make_response('')
+        return response
+
+    books = search(author)  # Exception handling omitted
+
+    html = '''
+    <style>
+    #myTable {
+        border-collapse: collapse;
+        width: 50%;
+        border: 1px solid #ddd;
+        font-size: 18px;
+    }
+
+    #myTable th, #myTable td {
+        text-align: left;
+        padding: 12px;
+    }
+
+    #myTable tr {
+        border-bottom: 1px solid #ddd;
+    }
+
+    #myTable tr.header, #myTable tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    </style>
+
+    <table id="myTable">
+    <thead>
+        <tr class="header">
+            <th>Game</th>
+        </tr>
+    </thead>
+    <tbody>
+    '''
+
+    pattern = '''
+    <tr game="%s">
+        <td>%s</td>   
+    </tr>
+    '''
+    for book in books[0:5]:
+        html += pattern % (book,book)
+
+    html += '''
+    </tbody>
+    </table>
+    '''
+
+    response = make_response(html)
+    return response
+
+
+@app.route('/Resultssummary', methods=['POST', 'GET'])
 def Resultssummary():
-    try:
-        messages = get_user_info()
-        return render_template('Resultssummary.html', messages = messages, app_data=app_data)
-    except:
-        return render_template('Resultssummary.html', app_data=app_data)
+    if request.method == 'GET':
+        try:
+            messages = get_user_info()
+            return render_template('Resultssummary.html', messages = messages, app_data=app_data)
+        except:
+            return render_template('Resultssummary.html', app_data=app_data)
+    else: # if request.method == 'POST'
+        try:
+            messages, games = generate_preview_info()
+            return render_template('preview.html', app_data=app_data, messages = messages, games = games)
+        except:
+            return render_template('preview.html', app_data=app_data)
 
 @app.route('/contact')
 def contact():
