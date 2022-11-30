@@ -48,4 +48,4 @@ def get_recommendation(game_user_likes = "Crysis 3", num = 5):
     return str
 
 if __name__ == '__main__':
-    get_recommendation("Crysis 3")
+    print(get_recommendation("Crysis 3",10))
