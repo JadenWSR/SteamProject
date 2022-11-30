@@ -3,7 +3,7 @@
 {% block body %}
 
 {% for index, row in messages.iterrows() %}
-    <h1> Hello {{ row[1]}}</h1>
+    <h1> Hello <strong>{{ row[1]}}</strong>!</h1>
     <br>
     <h2>The game you entered is: <strong>{{ row[2]}}</strong></h2>
     <br>

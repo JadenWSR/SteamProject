@@ -57,4 +57,4 @@ def search(name):
         return ['None']
 
 if __name__ == '__main__':
-    print(get_recommendation("Sniper Elite 5", num = 2))
+    print(get_recommendation("Asdivine Kamura", num = 5))

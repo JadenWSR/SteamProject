@@ -53,7 +53,7 @@ def insert_user_info(request):
     # Extract user_name and game list from request
     name = request.form["name"]
     if name == "":
-        name = "Anonymous"
+        name = "Anonymous User"
     name = name.replace("'", "''")
 
     game_entered = request.form["game_entered"]
@@ -66,7 +66,7 @@ def insert_user_info(request):
     nrow = len(n_row.fetchall()) + 1
 
     # add a new row to user database
-    cursor.execute("INSERT INTO user (id, name, game_entered, recommendation) VALUES (?,  ?, ?, ?)",
+    cursor.execute("INSERT INTO user (id, name, game_entered, recommendation) VALUES (?, ?, ?, ?)",
     (nrow, name, game_entered, recommendation))
     # Save the change
     g.user_db.commit()
@@ -126,9 +126,32 @@ def handle_search():
     books = search(author)  # Exception handling omitted
 
     html = '''
-    <table>
+    <style>
+    #myTable {
+        border-collapse: collapse;
+        width: 50%;
+        border: 1px solid #ddd;
+        font-size: 18px;
+    }
+
+    #myTable th, #myTable td {
+        text-align: left;
+        padding: 12px;
+    }
+
+    #myTable tr {
+        border-bottom: 1px solid #ddd;
+    }
+
+    #myTable tr.header, #myTable tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    </style>
+
+    <table id="myTable">
     <thead>
-        <tr>
+        <tr class="header">
             <th>Game</th>
         </tr>
     </thead>
@@ -137,7 +160,7 @@ def handle_search():
 
     pattern = '''
     <tr game="%s">
-        <td>%s</td>
+        <td>%s</td>   
     </tr>
     '''
     for book in books[0:5]:

@@ -3,9 +3,10 @@
 {% block body %}
 <center>
 <p><h2><strong>User Info and Recommendation Summary</strong></h2></p>
+<br>
+<input type="text" id="myInput" onkeyup="myFunction()" placeholder="Enter a user name to search all records">
 
-
-<table style="width:100%">
+<table style="width:100%" id="myTable">
     <tr>
       <th>User Id</th>
       <th>User Name</th>
@@ -24,6 +25,30 @@
     {% endfor %}
   </table>
 </center>
+
+<script>
+  function myFunction() {
+    // Declare variables
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("myInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("myTable");
+    tr = table.getElementsByTagName("tr");
+  
+    // Loop through all table rows, and hide those who don't match the search query
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td")[1];
+      if (td) {
+        txtValue = td.textContent || td.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+    }
+  }
+  </script>
 
 <footer>
   <p>Click a user id to preview the corresponding recommendations.</p>
