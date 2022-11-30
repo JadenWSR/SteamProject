@@ -47,5 +47,14 @@ def get_recommendation(game_user_likes = "Crysis 3", num = 5):
     str = " / ".join(recom_list)
     return str
 
+def search(name):
+    # names = df[df.Name == name]["Name"]
+    filter = df.Name.str.contains(name, case=False)
+    names = df[filter]["Name"]
+    if not names.empty:
+        return names.values
+    else:
+        return ['None']
+
 if __name__ == '__main__':
     print(get_recommendation("Sniper Elite 5", num = 2))

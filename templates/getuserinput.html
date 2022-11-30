@@ -8,15 +8,68 @@
         <input type="text" name="name" placeholder="Your name">
         <br>
         <br>
-        <label for="game_entered"><h3>Please enter a game you have played on Steam to start the recommendation: </h3></label><br>
-        <input required type="text" name="game_entered" placeholder="Must enter the exact game name from Steam.">
-        <br>
-        <br>
-        <label for="num"><h3>Number of games shown in the resulting recommendation(between 1 and 10): </h3></label><br>
+        <label for="game_entered"><h3>Please search and select a game you have played on Steam to start the recommendation: </h3></label><br>
+        <input type=hidden name="game_entered" id="game" placeholder="Must enter the exact game name from Steam.">
+        <!-- <label for="num"><h3>Number of games shown in the resulting recommendation(between 1 and 10): </h3></label><br>
         <input type="number" name="num" min="1" max="10" value="5">
         <br>
         <input type="submit" value="Submit form">
-    </form>
+    </form> -->
 
+  <!-- Please search and select a game you have played on Steam to start the recommendation: -->
+    <input type="text" id="gameInput" autoFocus>
+
+    <div id="resultsParagraph"></div>
+  <script src=
+    "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
+          </script>
+   <script>
+
+    'use strict';
+
+    function handleResponse(response)
+    {
+       let inner = ''
+       if (response !== '') inner = "<hr>" + response;
+       $('#resultsParagraph').html(inner);
+    }
+
+    let request = null;
+
+    function getResults()
+    {
+       let author = $('#gameInput').val();
+       author = encodeURIComponent(author);
+       let url = '/searchresults?author=' + author
+
+       if (request != null)
+          request.abort();
+
+       request = $.ajax({
+          type: 'GET',
+          url: url,
+          success: handleResponse
+       });
+    }
+
+    function setup()
+    {
+       $('#gameInput').on('input', getResults);
+       $('body').on('click', 'tr', function() {
+          let Game = $(this).eq(0).attr('game');
+          $('#game').val(Game);
+          $('#gameInput').val(Game);
+       });
+    }
+
+    $('document').ready(setup);
+
+ </script>
+
+<label for="num"><h3>Number of games shown in the resulting recommendation(between 1 and 10): </h3></label><br>
+<input type="number" name="num" min="1" max="10" value="5">
+<br>
+<input type="submit" value="Submit form">
+</form>
   <br /> 
 {% endblock %}

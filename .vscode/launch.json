@@ -7,11 +7,20 @@
         {
             "name": "Python: Current File",
             "type": "python",
-            "args": ["8080"],
             "request": "launch",
             "program": "${file}",
+            "args": [
+                "8080"
+            ],
             "console": "integratedTerminal",
+            "cwd": "${fileDirname}",
             "justMyCode": true
+        },
+        {
+            "type": "chrome",
+            "name": "0.0.0.0:8080",
+            "request": "launch",
+            "url": "0.0.0.0:8080"
         }
     ]
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from flask import Flask, g, render_template, request, redirect, url_for
+from flask import Flask, g, render_template, request, redirect, url_for, make_response
 import numpy as np
 import sqlite3
 import pickle
@@ -105,14 +105,52 @@ def index():
 @app.route('/getuserinput', methods=['POST', 'GET'])
 def getuserinput():
     if request.method == 'GET':
-        return render_template('getuserinput.html', app_data=app_data)
+        html = render_template('getuserinput.html', app_data=app_data)
+        response = make_response(html)
+        return response
+        # return render_template('getuserinput.html', app_data=app_data)
     else: # if request.method == 'POST'
         try:
             insert_user_info(request)
             return render_template('thanks.html', app_data=app_data)
         except:
             return render_template('error.html', app_data=app_data)
-            
+
+@app.route('/searchresults', methods=['GET'])           
+def handle_search():
+    author = request.args.get('author')
+    if (author is None) or (author.strip() == ''):
+        response = make_response('')
+        return response
+
+    books = search(author)  # Exception handling omitted
+
+    html = '''
+    <table>
+    <thead>
+        <tr>
+            <th>Game</th>
+        </tr>
+    </thead>
+    <tbody>
+    '''
+
+    pattern = '''
+    <tr game="%s">
+        <td>%s</td>
+    </tr>
+    '''
+    for book in books[0:5]:
+        html += pattern % (book,book)
+
+    html += '''
+    </tbody>
+    </table>
+    '''
+
+    response = make_response(html)
+    return response
+
 
 @app.route('/Resultssummary', methods=['POST', 'GET'])
 def Resultssummary():
