@@ -13,8 +13,7 @@ import os
 
 from recommendation import *
 
-# DEVELOPMENT_ENV  = True
-
+DEVELOPMENT_ENV  = True
 
 app = Flask(__name__)
 
@@ -27,9 +26,6 @@ app_data = {
 
 UPLOAD_FOLDER = os.path.join('../static/uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# Load the model
-
-# model = 
 
 def get_user_db():
     # Check whether there is a database called user_db in the g attribute of the app
@@ -68,10 +64,10 @@ def insert_user_info(request):
     # get nrow and assign unique id
     n_row = cursor.execute('select * from user;')
     nrow = len(n_row.fetchall()) + 1
-    
+
     # add a new row to user database
-    cursor.execute("INSERT INTO user (id, name, game_entered, recommendation) VALUES ({nrow}, '{name}', '{game_entered}', '{recommendation}')".format(
-        nrow = nrow, name = name, game_entered = game_entered, recommendation = recommendation))
+    cursor.execute("INSERT INTO user (id, name, game_entered, recommendation) VALUES (?,  ?, ?, ?)",
+    (nrow, name, game_entered, recommendation))
     # Save the change
     g.user_db.commit()
     # close the connection
