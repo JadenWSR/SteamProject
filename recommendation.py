@@ -2,11 +2,33 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
+import re
 from heapq import nlargest
+from dataBase import CLI 
 
-df = pd.read_csv(r"./Data/steam_games.csv", header=0, sep=";", low_memory=False)
+cli = CLI()
+c = cli._api._connection.cursor()
+c.execute(''' SELECT * FROM Steam_game''')
+results = c.fetchall()
+df = pd.DataFrame(results, columns = ['product_id', 'Name', 'release_date', 'Genre', 'Tags', 'Categories', 'developer_id'])
+
+# df = pd.read_csv(r"./Data/steam_games.csv", header=0, sep=";", low_memory=False)
 # print(df.head)
+
+def add_developer_name(row):
+    devs = ''
+    dev_id = row['developer_id']
+    dev_id = re.split(r'[(,)]',dev_id)
+    dev_id = [int(i) for i in dev_id if i]
+    for id in dev_id:
+        name = ''
+        if cli._api.get_dev_name(id):
+            name = cli._api.get_dev_name(id)[0][0]
+        devs += name
+        devs += ' '
+    return devs
+
+df["Developer"] = df.apply(add_developer_name, axis =1)
 
 features = ['Developer', 'Genre', 'Categories', 'Tags']
 for feature in features:
@@ -57,4 +79,4 @@ def search(name):
         return ['None']
 
 if __name__ == '__main__':
-    print(get_recommendation("Asdivine Kamura", num = 5))
+    print(get_recommendation("Crysis 3", num = 5))
