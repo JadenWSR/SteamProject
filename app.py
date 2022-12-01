@@ -182,13 +182,20 @@ def Resultssummary():
             messages = get_user_info()
             return render_template('Resultssummary.html', messages = messages, app_data=app_data)
         except:
-            return render_template('Resultssummary.html', app_data=app_data)
+            return render_template('Resultssummary.html', app_data=app_data, error = True)
     else: # if request.method == 'POST'
         try:
-            messages, games = generate_preview_info()
-            return render_template('preview.html', app_data=app_data, messages = messages, games = games)
+            return redirect('/preview')
         except:
-            return render_template('preview.html', app_data=app_data)
+            return render_template('error_preview.html', app_data=app_data)
+
+@app.route('/preview', methods=['POST', 'GET'])
+def preview():
+    try:
+        messages, games = generate_preview_info()
+        return render_template('preview.html', app_data=app_data, messages = messages, games = games)
+    except:
+        return render_template('error_preview.html', app_data=app_data)
 
 @app.route('/contact')
 def contact():
