@@ -5,7 +5,10 @@
 <p><h2><strong>User Info and Recommendation Summary</strong></h2></p>
 <br>
 <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Enter a user name to search all records">
+</center>
 
+<p>Click any User Id to view more information.</p>
+<center>
 <table style="width:100%" id="myTable">
     <tr>
       <th>User Id</th>
@@ -15,7 +18,7 @@
     </tr>
     {% for index, row in messages.iterrows() %}
     <tr>
-      <form method="post" action="preview"><td>
+      <form method="get" action="preview"><td>
         <button class = "button2" name = 'user_id' type="submit" formtarget="_blank" value="{{row[0]}}">{{ row[0]}}</button></td>
       </form>
       <td>{{ row[1]}}</td>
@@ -49,11 +52,9 @@
     }
   }
   </script>
-
-<footer>
-  <p>Click a user id to preview the corresponding recommendations.</p>
-</footer>
-
+<br>
+<br>
+<br>
 {% if error %}
 <br>Sorry, we don't have any users right now. 
 {% endif %}

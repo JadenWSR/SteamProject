@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<center><h2><strong>Information Summary</strong></h2></center>
+{% if dict is defined %}
+<table id = "Table">
+  {% for key, value in dict.items() %}
+  <tr>
+    <td><strong>{{key}}</strong></td>
+    <td>{{value}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+
+<form action="{{ url_for('preview') }}" method = 'get'>
+  <input type = "hidden" value = "{{id}}" name = "user_id">
+  <button class = "button" type="submit">Go back to the previous page</button>
+</form>
+
+<form action="{{ url_for('Resultssummary') }}">
+  <button class = "button1" type="submit">Go back to the Summary page</button>
+</form>
+
+{% endblock %}

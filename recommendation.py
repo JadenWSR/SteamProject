@@ -4,18 +4,23 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
 from heapq import nlargest
-from dataBase import CLI 
+from dataBase import CLI
 
-def get_recommendation_by_filter(qurey=''' SELECT * FROM Steam_game''',game_user_likes = "Crysis 3", num = 5):
+cli = CLI()
+c = cli._api._connection.cursor()
+c.execute(''' SELECT * FROM Steam_game''')
+results = c.fetchall()
+full_df = pd.DataFrame(results, columns = ['appid', 'Name', 'release_date', 'Genre', 'Tags', 'Categories', 'developer_id'])
+
+def get_recommendation_by_filter(game_user_likes, num, t, query=''' SELECT * FROM Steam_game'''):
     cli = CLI()
     c = cli._api._connection.cursor()
-    c.execute(qurey)
-    # c.execute(''' SELECT * FROM Steam_game''')
+    c.execute(query, t)
     results = c.fetchall()
-    df = pd.DataFrame(results, columns = ['product_id', 'Name', 'release_date', 'Genre', 'Tags', 'Categories', 'developer_id'])
-
-    # df = pd.read_csv(r"./Data/steam_games.csv", header=0, sep=";", low_memory=False)
-    # print(df.head)
+    df = pd.DataFrame(results, columns = ['appid', 'Name', 'release_date', 'Genre', 'Tags', 'Categories', 'developer_id'])
+    if df.Name.str.contains(game_user_likes, case=False).sum() == 0:
+        # handle invalid searching filters
+        df = full_df.copy()
 
     def add_developer_name(row):
         devs = ''
@@ -47,21 +52,19 @@ def get_recommendation_by_filter(qurey=''' SELECT * FROM Steam_game''',game_user
     cv = CountVectorizer()
     count_matrix = cv.fit_transform(df["combined_features"])
 
-
-
     def get_index_from_title(title):
         return df[df.Name == title].index.item()
 
     def get_title_from_index(index):
-            return df[df.index == index]["Name"].values[0]
+        return df[df.index == index]["Name"].values[0]
 
-    def get_recommendation(game_user_likes = "Crysis 3", num = 5):
+    def get_recommendation(game_user_likes, num):
         game_index = get_index_from_title(game_user_likes)
 
         cosine_sim = cosine_similarity(count_matrix[game_index],count_matrix)[0]
 
         similar_games = list(enumerate(cosine_sim))
-        # sorted_similar_movies = sorted(similar_movies, key=lambda x:x[1], reverse=True)
+        
         sorted_similar_games = nlargest(num + 1, similar_games, key=lambda x:x[1])[1::]
 
         recom_list = []
@@ -71,16 +74,19 @@ def get_recommendation_by_filter(qurey=''' SELECT * FROM Steam_game''',game_user
         str = " / ".join(recom_list)
         return str
 
-    def search(name):
-        # names = df[df.Name == name]["Name"]
-        filter = df.Name.str.contains(name, case=False)
-        names = df[filter]["Name"]
-        if not names.empty:
-            return names.values
-        else:
-            return ['None']
-    return get_recommendation("Crysis 3", num = 5)
+
+    return get_recommendation(game_user_likes, num)
+
+def search(name):
+    filter = full_df.Name.str.contains(name, case=False)
+    names = full_df[filter]["Name"]
+    if not names.empty:
+        return names.values
+    else:
+        return ['None']
+    
 
 if __name__ == '__main__':
-    print(get_recommendation_by_filter(''' SELECT * FROM Steam_game''', "Crysis 3", num = 5))
-    # print(get_recommendation("Crysis 3", num = 5))
+    # print(get_recommendation_by_filter(game_user_likes = "GridlessDB", num = 5, query = """select * from Steam_game where tags like ? or tags like ? and genre like ? or genre like ? and categories like ? or categories like ?""",
+    # t = ('%action%','%casual%', '%action%','%casual%', '%single%', '%multi%')))
+    print(full_df[full_df.Name == 'GridlessDB']['appid'].item())

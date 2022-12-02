@@ -12,22 +12,19 @@
   </tr>
   {% endfor %}
 <br>
-
 <h2>Please select one game to preview:</h2>
 <div class="controls" id="dropdown_item">
-<select name="games" method="GET">
+<form action="/previewSingleGame", method = 'GET'>
+<input type = "hidden" value = "{{id}}" name = "user_id">
+<Select name="game_selected" required>
+  <option value="" disabled selected>Click here to select</option>
   {% for game in games %}
-      <option value="{{game}}" SELECTED>{{game}}</option>"
+      <option value="{{game}}">{{game}}</option>
   {% endfor %}
-</select>
+</Select>
+<input type="submit" value="Submit">
+</form>
 </div>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
 
 <form action="{{ url_for('Resultssummary') }}">
   <button class = "button1" type="submit">Go back to the Summary page</button>

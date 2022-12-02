@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from flask import Flask, g, render_template, request, redirect, url_for, make_response
+from flask import Flask, g, render_template, request, redirect, url_for, make_response, jsonify
 import numpy as np
 import sqlite3
 import pickle
@@ -16,6 +16,7 @@ from recommendation import *
 DEVELOPMENT_ENV  = True
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 
 app_data = {
     "name":         "Steam Game Recommendation Application",
@@ -37,7 +38,7 @@ def get_user_db():
         cursor = g.user_db.cursor()
         # Check whether a table called user exists in user_db, and create it if not
         sql_create_user_table = """ CREATE TABLE IF NOT EXISTS user (
-                                    id integer,
+                                    id integer PRIMARY KEY,
                                     name text,
                                     game_entered text,
                                     recommendation text
@@ -45,6 +46,43 @@ def get_user_db():
         cursor.execute(sql_create_user_table)
     # Return the connection
     return g.user_db
+
+def filter_data(request):
+    tags = request.form['tag']
+    genres = request.form['genre']
+    categories = request.form['category']
+    t = tuple()
+    if all(x == "" for x in (tags,genres, categories)):
+        # No filter condition input
+        cmd = """select * from Steam_game"""
+    else:
+        # at least one filter condition is not empty
+        cmd = """select * from Steam_game where"""
+        if tags != "":
+            if cmd[len(cmd)-5:len(cmd)] != "where":
+                cmd += " and"
+            tags = list(map(str.strip, tags.split(';')))
+            for tag in tags:
+                cmd += " tags like ? or"
+                t += ('%'+ str(tag) + '%',)
+            cmd = cmd[:len(cmd) - 3]
+        if genres != "":
+            if cmd[len(cmd)-5:len(cmd)] != "where":
+                cmd += " and"
+            genres = list(map(str.strip, genres.split(';')))
+            for genre in genres:
+                cmd += " genre like ? or"
+                t += ('%'+ str(genre) + '%',)
+            cmd = cmd[:len(cmd) - 3]
+        if categories != "":
+            if cmd[len(cmd)-5:len(cmd)] != "where":
+                cmd += " and"
+            categories = list(map(str.strip, categories.split(';')))
+            for category in categories:
+                cmd += " categories like ? or"
+                t += ('%'+ str(category) + '%',)
+            cmd = cmd[:len(cmd) - 3]
+    return cmd, t
 
 def insert_user_info(request):
     # open the connection
@@ -58,9 +96,9 @@ def insert_user_info(request):
 
     game_entered = request.form["game_entered"]
     game_entered = game_entered.replace("'", "''")
+    cmd, t = filter_data(request)
 
-    recommendation = get_recommendation(game_user_likes=game_entered, num=request.form.get('num', type=int))
-
+    recommendation = get_recommendation_by_filter(game_user_likes = game_entered, num = request.form.get('num', type=int), t = t, query = cmd)
     # get nrow and assign unique id
     n_row = cursor.execute('select * from user;')
     nrow = len(n_row.fetchall()) + 1
@@ -86,7 +124,8 @@ def generate_preview_info():
     # open the connection
     g.user_db = get_user_db()
     # get id number of the user
-    id = int(request.form['user_id'])
+    #id = int(request.form['user_id'])
+    id = int(request.args.get('user_id'))
     
     # Get a collection of all user input from the user_db
     messages = pd.read_sql_query("SELECT * FROM user where id = '{id}'".format(id = id), g.user_db)
@@ -174,7 +213,6 @@ def handle_search():
     response = make_response(html)
     return response
 
-
 @app.route('/Resultssummary', methods=['POST', 'GET'])
 def Resultssummary():
     if request.method == 'GET':
@@ -192,10 +230,53 @@ def Resultssummary():
 @app.route('/preview', methods=['POST', 'GET'])
 def preview():
     try:
+        id = int(request.args.get('user_id'))
         messages, games = generate_preview_info()
-        return render_template('preview.html', app_data=app_data, messages = messages, games = games)
+        return render_template('preview.html', app_data=app_data, messages = messages, games = games, id = id)
     except:
         return render_template('error_preview.html', app_data=app_data)
+
+@app.route('/previewSingleGame')
+def previewSingleGame():
+    try:
+        id = int(request.args.get('user_id'))
+        select =  request.args.get("game_selected")
+        dict = game_api(select).get_json()
+
+        return render_template('previewSingleGame.html', app_data=app_data, dict = dict, select = select, id = id)
+    except:
+        return render_template('error_preview.html', app_data=app_data)
+
+
+# api to get info for a specific game
+@app.route("/info/<string:name>")
+def game_api(name):
+    name = name.strip()
+    info = full_df[full_df.Name == name]
+    # join developer table to get developer name
+    # open games db connection
+    cli_game = CLI()
+
+    devs = ''
+    dev_id = info['developer_id'].item()
+    dev_id = list(eval(dev_id))
+    dev_id = [int(i) for i in dev_id if i]
+    for id in dev_id:
+            name = ''
+            if cli_game._api.get_dev_name(id):
+                name = cli_game._api.get_dev_name(id)[0][0]
+            devs += name
+            devs += ' '
+    info["Developer"] = devs
+
+    return jsonify({
+        "Steam appid": info['appid'].item(),
+        "Name": info['Name'].item(),
+        'Release Date': info['release_date'].item(),
+        'Tags': info['Tags'].item(),
+        'Categories': info['Categories'].item(),
+        'Developer': info['Developer'].item()})
+
 
 @app.route('/contact')
 def contact():
