@@ -78,8 +78,9 @@
 <label for="category"><h3>Category (Separate multiple keywords with <strong>;</strong>): </h3></label><br>
 <input type=text name="category" placeholder="Any Categories">
 
-
-<input type="submit" value="Submit form">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<input type="submit" value="Submit form" onclick="$('#loading').show();">
+<div id="loading" style="display:none;"><center><img src="{{url_for('static', filename='loading.gif')}}" alt="" /><br><h1>Generating recommendation......</h1></center></div>
 </form>
   <br /> 
 {% endblock %}
