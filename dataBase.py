@@ -6,6 +6,7 @@ from sqlite3 import Error
 import pandas as pd
 import numpy as np
 import math
+import urllib.parse
 
 
 def create_connection(db_file="./game.db"):
@@ -45,6 +46,18 @@ class database_API:
         self._cursor.execute('''CREATE TABLE IF NOT EXISTS Developer
                         (developer_id INT PRIMARY KEY,
                         developer_name TEXT)''')
+        # self._cursor.execute('''DROP TABLE IF EXISTS Detail''')
+        self._cursor.execute('''CREATE TABLE IF NOT EXISTS Detail
+                        (appid INT PRIMARY KEY,
+                        language TEXT,
+                        description TEXT,
+                        website TEXT)''')
+        # self._cursor.execute('''DROP TABLE IF EXISTS Require''')
+        self._cursor.execute('''CREATE TABLE IF NOT EXISTS Require
+                        (appid INT PRIMARY KEY,
+                        pc TEXT,
+                        mac TEXT,
+                        linux TEXT)''')
 
         
 
@@ -65,6 +78,12 @@ class database_API:
 
     def insert_developer(self, data):
         self.insert('Developer', data)
+
+    def insert_detail(self, data):
+        self.insert('Detail', data)
+    
+    def insert_require(self, data):
+        self.insert('Require', data)
 
     def get_dev_name(self, id):
         query = ''' SELECT developer_name FROM Developer WHERE developer_id = ''' + str(id)
@@ -103,15 +122,41 @@ class CLI:
             self._api.insert_developer(data)
         print('Successfully added!')
 
+    def add_detail(self):
+        
+        df = pd.read_csv(r"./Data/Detail.csv", header=0, sep=",", low_memory=False).fillna('')
+        rows = df.values
+        for row in rows:
+            for i in range(2,len(row)):
+                row[i] = urllib.parse.quote_plus(row[i])
+            data = tuple(row[1::])
+            self._api.insert_detail(data)
+        print('Successfully added!')
+
+    def add_require(self):
+        df = pd.read_csv(r"./Data/Requirement.csv", header=0, sep=",", low_memory=False).fillna('')
+        rows = df.values
+        for row in rows:
+            for i in range(2,len(row)):
+                row[i] = urllib.parse.quote_plus(row[i])
+                # for decode use urllib.parse.unquote(string)
+            data = tuple(row[1::])
+            self._api.insert_require(data)
+        print('Successfully added!')
+
 
     def run(self):
         while True:
-            std_in = input("Press 1 for adding game, 2 for developer\n")
+            std_in = input("Press 1 for adding game, 2 for developer, 3 for detail, 4 for requirement\n")
             match std_in:
                 case '1':
                     self.add_game()
                 case '2':
                     self.add_developer()
+                case '3':
+                    self.add_detail()
+                case '4':
+                    self.add_require()
 
 
 
