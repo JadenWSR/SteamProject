@@ -225,6 +225,4 @@ class CLI:
 
 if __name__ == '__main__':
     cli = CLI()
-    results=cli._api.get_details(1183470)[0][1]
-    print(results)
-    # cli.run()
+    cli.run()
