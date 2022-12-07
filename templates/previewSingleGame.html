@@ -1,8 +1,13 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-<center><h2><strong>Information Summary</strong></h2></center>
+
 {% if dict is defined %}
+<center><img src={{link1}}></img></center>
+<br>
+<center><h1><strong>Information Summary</strong></h1></center>
+<br>
+<br>
 <table id = "Table">
   {% for key, value in dict.items() %}
   <tr>
@@ -12,7 +17,9 @@
   {% endfor %}
 </table>
 {% endif %}
-
+<a href={{link2}}>Click here to purchase this game on Steam!</a>
+<br>
+<br>
 
 <form action="{{ url_for('preview') }}" method = 'get'>
   <input type = "hidden" value = "{{id}}" name = "user_id">

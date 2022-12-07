@@ -1,8 +1,10 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-<br><h2>Sorry, we are unable to upload your form. Please try again.</h2><br /> 
+<br><h2>Sorry, we are unable to upload your form.</h2><br /> 
 <br /> 
+<h2>Please try again with another game or new searching criteria.</h2><br /> 
+<br>
 <h2>Thank you for using our Webapp! To startover, click here:</h2>
 <form action="{{ url_for('getuserinput') }}">
   <button class = "button" type="submit">Start Again!</button>

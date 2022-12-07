@@ -107,13 +107,32 @@ class database_API:
         self.insert('Require', data)
 
     def get_dev_name(self, id):
-        query = ''' SELECT developer_name FROM Developer WHERE developer_id = ''' + str(id)
-        self._cursor.execute(query)
+        query = """SELECT developer_name
+                    FROM Developer
+                    WHERE developer_id = ?"""
+        self._cursor.execute(query, (id,))
         return self._cursor.fetchall()
 
+    def get_details(self, id):
+        query = """SELECT language, description
+                    FROM Detail
+                    WHERE appid = ?"""
+        self._cursor.execute(query, (id,))
+        return self._cursor.fetchall()
+
+    def get_requirement(self, id):
+        query = """SELECT pc, mac, linux
+                    FROM Require
+                    WHERE appid = ?"""
+        self._cursor.execute(query, (id,))
+        return self._cursor.fetchall()
+
+
     def get_dlc(self, id):
-        query = ''' SELECT Dlc.name FROM (Venue NATURAL JOIN Steam_game NATURAL JOIN Dlc on Steam_game.appid = parent_id) WHERE parent_id = ''' + str(id)
-        self._cursor.execute(query)
+        query = """SELECT group_concat(name,\' / \')
+                    FROM Dlc
+                    WHERE parent_id = ?"""
+        self._cursor.execute(query, (id,))
         return self._cursor.fetchall()
 
 
@@ -206,4 +225,6 @@ class CLI:
 
 if __name__ == '__main__':
     cli = CLI()
-    cli.run()
+    results=cli._api.get_details(1183470)[0][1]
+    print(results)
+    # cli.run()

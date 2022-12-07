@@ -10,7 +10,7 @@ import pandas as pd
 import io
 import base64
 import os
-
+import urllib.parse
 from recommendation import *
 
 DEVELOPMENT_ENV  = True
@@ -238,14 +238,16 @@ def preview():
 
 @app.route('/previewSingleGame')
 def previewSingleGame():
-    try:
+    # try:
         id = int(request.args.get('user_id'))
         select =  request.args.get("game_selected")
         dict = game_api(select).get_json()
-
-        return render_template('previewSingleGame.html', app_data=app_data, dict = dict, select = select, id = id)
-    except:
-        return render_template('error_preview.html', app_data=app_data)
+        link1 = 'https://cdn.cloudflare.steamstatic.com/steam/apps/'+ str(dict["Steam appid"]) +'/header.jpg'
+        link2 = 'https://store.steampowered.com/app/' + str(dict["Steam appid"])
+        return render_template('previewSingleGame.html', app_data=app_data, dict = dict, select = select,
+        id = id, link1 = link1, link2 = link2)
+    # except:
+    #     return render_template('error_preview.html', app_data=app_data)
 
 
 # api to get info for a specific game
@@ -268,14 +270,53 @@ def game_api(name):
             devs += name
             devs += ' '
     info["Developer"] = devs
+    detail = cli_game._api.get_details(info['appid'].item())
+    d = []
+    if detail != []:
+        for det in detail[0]:
+            if det is None:
+                d.append("Data Not Available")
+            else:
+                # decode detail
+                d.append(urllib.parse.unquote(det).replace('+', ' '))
+    else:
+        d = ["Data Not Available" for i in range(2)]
+
+    requirement = cli_game._api.get_requirement(info['appid'].item())
+    r = []
+    if requirement != []:
+        for req in requirement[0]:
+            if req is None:
+                r.append("Data Not Available")
+            else:
+                    # decode req
+                r.append(urllib.parse.unquote(req).replace('+', ' '))
+    else:
+        r=["Data Not Available" for i in range(3)]
+        
+
+    dlc = cli_game._api.get_dlc(info['appid'].item())[0][0]
+    if dlc is None:
+        dlc = "There's no DLC available for this Steam Game."
+    else:
+        # decode dlc
+        dlc = urllib.parse.unquote(dlc).replace('+', ' ')
+        
+
 
     return jsonify({
-        "Steam appid": info['appid'].item(),
-        "Name": info['Name'].item(),
+        'Steam appid': info['appid'].item(),
+        'Name': info['Name'].item(),
+        'Description': d[1],
         'Release Date': info['release_date'].item(),
+        'Languages' : d[0],
         'Tags': info['Tags'].item(),
         'Categories': info['Categories'].item(),
-        'Developer': info['Developer'].item()})
+        'Developer': info['Developer'].item(),
+        'Windows Requirement': r[0],
+        'Mac Requirement': r[1],
+        'Linux Requirement': r[2],
+        'DLC' : dlc})
 
 
 @app.route('/contact')

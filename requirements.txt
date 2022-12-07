@@ -1,6 +1,4 @@
-###### Requirements without Version Specifiers ######
-flask
-gunicorn
-numpy
-pandas
-sklearn
+Flask==2.2.2
+numpy==1.23.5
+pandas==1.5.2
+scikit_learn==1.1.3

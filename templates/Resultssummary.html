@@ -19,7 +19,7 @@
     {% for index, row in messages.iterrows() %}
     <tr>
       <form method="get" action="preview"><td>
-        <button class = "button2" name = 'user_id' type="submit" formtarget="_blank" value="{{row[0]}}">{{ row[0]}}</button></td>
+        <button class = "button2" name = 'user_id' type="submit" value="{{row[0]}}">{{ row[0]}}</button></td>
       </form>
       <td>{{ row[1]}}</td>
       <td>{{ row[2]}}</td>
