@@ -51,13 +51,29 @@ class database_API:
                         (appid INT PRIMARY KEY,
                         language TEXT,
                         description TEXT,
-                        website TEXT)''')
+                        website TEXT,
+                        FOREIGN KEY (appid)
+                            REFERENCES Steam_game (appid))''')
         # self._cursor.execute('''DROP TABLE IF EXISTS Require''')
         self._cursor.execute('''CREATE TABLE IF NOT EXISTS Require
                         (appid INT PRIMARY KEY,
                         pc TEXT,
                         mac TEXT,
-                        linux TEXT)''')
+                        linux TEXT,
+                        FOREIGN KEY (appid)
+                            REFERENCES Steam_game (appid))''')
+        # self._cursor.execute('''DROP TABLE IF EXISTS Dlc''')
+        self._cursor.execute('''CREATE TABLE IF NOT EXISTS Dlc
+                        (appid INT PRIMARY KEY,
+                        name TEXT,
+                        release_date TEXT,
+                        genre TEXT,
+                        categories TEXT,
+                        tags TEXT,
+                        developer_id TEXT,
+                        parent_id INT,
+                        FOREIGN KEY (parent_id)
+                            REFERENCES Steam_game (appid))''')
 
         
 
@@ -75,6 +91,9 @@ class database_API:
 
     def insert_game(self, data):
         self.insert('Steam_game', data)
+    
+    def insert_dlc(self, data):
+        self.insert('Dlc', data)
 
     def insert_developer(self, data):
         self.insert('Developer', data)
@@ -87,6 +106,11 @@ class database_API:
 
     def get_dev_name(self, id):
         query = ''' SELECT developer_name FROM Developer WHERE developer_id = ''' + str(id)
+        self._cursor.execute(query)
+        return self._cursor.fetchall()
+
+    def get_dlc(self, id):
+        query = ''' SELECT name FROM Dlc WHERE parent_id = ''' + str(id)
         self._cursor.execute(query)
         return self._cursor.fetchall()
 
@@ -110,7 +134,22 @@ class CLI:
             data = tuple(row[1::])
             self._api.insert_game(data)
         print('Successfully added!')
-    
+
+    def add_dlc(self):
+        
+        df = pd.read_csv(r"./Data/dlc.csv", header=0, sep=",", low_memory=False).fillna('')
+        rows = df.values
+        for row in rows:
+            # row = [i if not math.isnan(i) else '' for i in row]
+            if row[-1]:
+                row[-1] = int(row[-1])
+            else:
+                continue
+            for i in range(2,3):
+                row[i] = urllib.parse.quote_plus(row[i])
+            data = tuple(row[1::])
+            self._api.insert_dlc(data)
+        print('Successfully added!')
     def add_developer(self):
         
         df = pd.read_csv(r"./Data/Developer.csv", header=0, sep=",", low_memory=False).fillna('')
@@ -147,7 +186,7 @@ class CLI:
 
     def run(self):
         while True:
-            std_in = input("Press 1 for adding game, 2 for developer, 3 for detail, 4 for requirement\n")
+            std_in = input("Press 1 for adding game, 2 for developer, 3 for detail, 4 for requirement, 5 for dlc\n")
             match std_in:
                 case '1':
                     self.add_game()
@@ -157,6 +196,8 @@ class CLI:
                     self.add_detail()
                 case '4':
                     self.add_require()
+                case '5':
+                    self.add_dlc()
 
 
 
