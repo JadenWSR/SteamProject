@@ -110,7 +110,7 @@ class database_API:
         return self._cursor.fetchall()
 
     def get_dlc(self, id):
-        query = ''' SELECT name FROM Dlc WHERE parent_id = ''' + str(id)
+        query = ''' SELECT Dlc.name FROM (Venue NATURAL JOIN Steam_game NATURAL JOIN Dlc on Steam_game.appid = parent_id) WHERE parent_id = ''' + str(id)
         self._cursor.execute(query)
         return self._cursor.fetchall()
 
