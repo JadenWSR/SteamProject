@@ -254,7 +254,7 @@ def previewSingleGame():
 @app.route("/info/<string:name>")
 def game_api(name):
     name = name.strip()
-    info = full_df[full_df.Name == name]
+    info = full_df[full_df.Name == name].iloc[:1]
     # join developer table to get developer name
     # open games db connection
     cli_game = CLI()

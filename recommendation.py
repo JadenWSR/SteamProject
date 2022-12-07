@@ -53,7 +53,7 @@ def get_recommendation_by_filter(game_user_likes, num, t, query=''' SELECT * FRO
     count_matrix = cv.fit_transform(df["combined_features"])
 
     def get_index_from_title(title):
-        return df[df.Name == title].index.item()
+        return df[df.Name == title].index[0]
 
     def get_title_from_index(index):
         return df[df.index == index]["Name"].values[0]
@@ -89,4 +89,8 @@ def search(name):
 if __name__ == '__main__':
     # print(get_recommendation_by_filter(game_user_likes = "GridlessDB", num = 5, query = """select * from Steam_game where tags like ? or tags like ? and genre like ? or genre like ? and categories like ? or categories like ?""",
     # t = ('%action%','%casual%', '%action%','%casual%', '%single%', '%multi%')))
-    print(full_df[full_df.Name == 'GridlessDB']['appid'].item())
+    # print(full_df[full_df.Name == 'GridlessDB']['appid'].item())
+    # print(get_recommendation_by_filter('Ricochet', 5, tuple(), query=''' SELECT * FROM Steam_game'''))
+    duplicate_in_student = full_df.duplicated(subset=['Name'])
+    if duplicate_in_student.any():
+        print(full_df.loc[~duplicate_in_student], end='\n\n')
