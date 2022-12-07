@@ -7,9 +7,9 @@
 
 ## Description
 
-There are a large number of games available on Steam, and people may have a hard time finding the game that they are potentially interested in.
+There are a large number of games available on Steam, and people may have a hard time finding the game that they are potentially interested in. 
 
-This web application will recommend Steam games to the user based on their input Steam purchase history.
+This web application will recommend Steam games to the user based on their input Steam game and customized searching criteria. Recommendations will be generated using our model and the user will be able to review all information for recommended games.
 
 ## How to run this app on your computer from command line
  At the command prompt or terminal, navigate to your projects directory

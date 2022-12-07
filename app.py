@@ -238,7 +238,7 @@ def preview():
 
 @app.route('/previewSingleGame')
 def previewSingleGame():
-    # try:
+    try:
         id = int(request.args.get('user_id'))
         select =  request.args.get("game_selected")
         dict = game_api(select).get_json()
@@ -246,8 +246,8 @@ def previewSingleGame():
         link2 = 'https://store.steampowered.com/app/' + str(dict["Steam appid"])
         return render_template('previewSingleGame.html', app_data=app_data, dict = dict, select = select,
         id = id, link1 = link1, link2 = link2)
-    # except:
-    #     return render_template('error_preview.html', app_data=app_data)
+    except:
+        return render_template('error_preview.html', app_data=app_data)
 
 
 # api to get info for a specific game
