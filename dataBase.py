@@ -75,6 +75,8 @@ class database_API:
                         FOREIGN KEY (parent_id)
                             REFERENCES Steam_game (appid))''')
 
+        self._cursor.execute('''CREATE INDEX IF NOT EXISTS parent ON Dlc (parent_id) ''')
+
         
 
     def insert(self,table_name, data):
