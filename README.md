@@ -20,7 +20,7 @@ Site will be available at: http://localhost:5000
 
 Note:
 
-- Please make sure you have installed the required versions of all python packages needed in [requirements.txt](https://github.com/JadenWSR/SteamProject/blob/main/requirements.txt) before you run the app. Windows: `pip install -r requirements.txt`
+- Please make sure you have installed the required versions of all python packages needed in [requirements.txt](https://github.com/JadenWSR/SteamProject/blob/main/requirements.txt) before you run the app. For both Mac and Windows: `pip install -r requirements.txt`
 
 ## Database Schema Design
 
